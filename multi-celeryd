@@ -11,27 +11,26 @@
 # Short-Description: starts multiple celery task worker daemon
 ### END INIT INFO
 
-
 PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=`which python`
-NAME=celeryd
+NAME='multi-celeryd'
 
-CELERYD_MODULE='celery.bin.celeryd_detach'
+CELERYD_PY_MODULE='celery.bin.celeryd_detach'
 CELERYD_CONFIGS_DIR='/etc/multi-celeryd'
 CELERYD_PIDFILES_DIR='/run/multi-celeryd'
 CELERYD_LOGFILES_DIR='/var/log/multi-celeryd'
 
-if [ ! -z "`id celery 2> /dev/null`" ]
+if [ -n "`id celery 2> /dev/null`" ]
 then
     CELERYD_UID='celery'
     CELERYD_GID='celery'
-elif [ ! -z "`id www-data 2> /dev/null`" ]
+elif [ -n "`id www-data 2> /dev/null`" ]
 then
     CELERYD_UID='www-data'
     CELERYD_GID='www-data'
 fi
 
-# Include uwsgi defaults if available
+# load the settings from /etc/default
 if [ -f /etc/default/multi-celeryd ]
 then
     . /etc/default/multi-celeryd
@@ -54,7 +53,7 @@ start() {
     start-stop-daemon --start --quiet --pidfile $CELERYD_PIDFILE \
         --retry 5 --exec $DAEMON --oknodo \
         -- \
-        -m $CELERYD_MODULE \
+        -m $CELERYD_PY_MODULE \
         --uid=$CELERYD_UID --gid=$CELERYD_GID \
         --pidfile=$CELERYD_PIDFILE \
         --logfile=$CELERYD_LOGFILE --loglevel=$CELERYD_LOGLEVEL \
@@ -69,7 +68,7 @@ stop() {
     log_end_msg $?
 }
 
-status(){
+status() {
     status_of_proc -p $CELERYD_PIDFILE $DAEMON "$NAME '$CELERYD_APP' at '$CELERYD_WORKDIR'"
 }
 
@@ -97,7 +96,7 @@ multi() {
 
         test -z $CELERYD_LOGLEVEL && CELERYD_LOGLEVEL='ERROR'
 
-        if [ ! -z $CELERYD_OWNER ] && [ ! -z $CELERYD_APP ]
+        if [ -n "$CELERYD_OWNER" ] && [ -n "$CELERYD_APP" ]
         then
             test -z $CELERYD_PIDFILE && CELERYD_PIDFILE="$CELERYD_PIDFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.pid"
             test -z $CELERYD_LOGFILE && CELERYD_LOGFILE="$CELERYD_LOGFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.log"
@@ -121,7 +120,7 @@ case "$1" in
         multi start
         ;;
     reload)
-        echo "It don't support reload. Use restart instead."
+        echo "It doesn't support reload. Use restart instead."
         ;;
     status)
         multi status
@@ -131,4 +130,5 @@ case "$1" in
         exit 1
         ;;
 esac
+
 exit 0
