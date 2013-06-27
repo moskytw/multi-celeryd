@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# It is authored by Mosky Liu <mosky.tw@gmail.com>.
+
+### BEGIN INIT INFO
+# Provides:          multi-celeryd
+# Required-Start:    $network $local_fs $remote_fs
+# Required-Stop:     $network $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts multiple celery task worker daemon
+### END INIT INFO
+
+
+PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=`which python`
+NAME=celeryd
+
+CELERYD_MODULE='celery.bin.celeryd_detach'
+CELERYD_CONFIGS_DIR='/etc/multi-celeryd'
+CELERYD_PIDFILES_DIR='/run/multi-celeryd'
+CELERYD_LOGFILES_DIR='/var/log/multi-celeryd'
+
+if [ ! -z "`id celery 2> /dev/null`" ]
+then
+    CELERYD_UID='celery'
+    CELERYD_GID='celery'
+elif [ ! -z "`id www-data 2> /dev/null`" ]
+then
+    CELERYD_UID='www-data'
+    CELERYD_GID='www-data'
+fi
+
+# Include uwsgi defaults if available
+if [ -f /etc/default/multi-celeryd ]
+then
+    . /etc/default/multi-celeryd
+fi
+
+test -x $DAEMON || exit 1
+test -d $CELERYD_CONFIGS_DIR || mkdir -p $CELERYD_CONFIGS_DIR
+test -d $CELERYD_PIDFILES_DIR || mkdir -p $CELERYD_PIDFILES_DIR
+test -d $CELERYD_LOGFILES_DIR || mkdir -p $CELERYD_LOGFILES_DIR
+
+chown $CELERYD_UID:$CELERYD_GID $CELERYD_PIDFILES_DIR
+chown $CELERYD_UID:$CELERYD_GID $CELERYD_LOGFILES_DIR
+
+set -e
+
+. /lib/lsb/init-functions
+
+start() {
+    log_daemon_msg "Starting celeryd '$CELERYD_APP' at '$CELERYD_WORKDIR'" "$NAME"
+    start-stop-daemon --start --quiet --pidfile $CELERYD_PIDFILE \
+        --retry 5 --exec $DAEMON --oknodo \
+        -- \
+        -m $CELERYD_MODULE \
+        --uid=$CELERYD_UID --gid=$CELERYD_GID \
+        --pidfile=$CELERYD_PIDFILE \
+        --logfile=$CELERYD_LOGFILE --loglevel=$CELERYD_LOGLEVEL \
+        --workdir=$CELERYD_WORKDIR --app=$CELERYD_APP
+    log_end_msg $?
+}
+
+stop() {
+    log_daemon_msg "Stoping celeryd '$CELERYD_APP' at '$CELERYD_WORKDIR'" "$NAME"
+    start-stop-daemon --stop --quiet --pidfile $CELERYD_PIDFILE \
+        --retry 5 --exec $DAEMON --oknodo
+    log_end_msg $?
+}
+
+status(){
+    status_of_proc -p $CELERYD_PIDFILE $DAEMON "$NAME '$CELERYD_APP' at '$CELERYD_WORKDIR'"
+}
+
+multi() {
+    configs=`ls $CELERYD_CONFIGS_DIR`
+
+    if [ -z $configs ]
+    then
+        echo "The configs dir '$CELERYD_CONFIGS_DIR' is empty.">&2
+        echo "exit.">&2
+        exit 1
+    fi
+
+    for config in $configs
+    do
+
+        unset CELERYD_PIDFILE
+        unset CELERYD_LOGFILE
+        unset CELERYD_OWNER
+        unset CELERYD_LOGLEVEL
+        unset CELERYD_WORKDIR
+        unset CELERYD_APP
+
+        . /$CELERYD_CONFIGS_DIR/$config
+
+        test -z $CELERYD_LOGLEVEL && CELERYD_LOGLEVEL='ERROR'
+
+        if [ ! -z $CELERYD_OWNER ] && [ ! -z $CELERYD_APP ]
+        then
+            test -z $CELERYD_PIDFILE && CELERYD_PIDFILE="$CELERYD_PIDFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.pid"
+            test -z $CELERYD_LOGFILE && CELERYD_LOGFILE="$CELERYD_LOGFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.log"
+        fi
+
+        $1
+
+    done
+}
+
+case "$1" in
+    start)
+        multi start
+        ;;
+    stop)
+        multi stop
+        ;;
+    restart|force-reload)
+        multi stop
+        sleep 1
+        multi start
+        ;;
+    reload)
+        echo "It don't support reload. Use restart instead."
+        ;;
+    status)
+        multi status
+        ;;
+    *)
+        echo "Usage: $NAME {start|stop|restart|reload|force-reload|statu}" >&2
+        exit 1
+        ;;
+esac
+exit 0
