@@ -1,6 +1,12 @@
 #!/bin/sh
 
+# use owner to auto config the pidfile and logfile
 CELERYD_OWNER=$OWNER
+# or set them manually
+#CELERYD_PIDFILE=$PIDFILE
+#CELERYD_LOGFILE=$LOGFILE
+
+#CELERYD_LOGLEVEL=$LOGLEVEL # optional, default is ERROR
+
 CELERYD_WORKDIR=$WORKDIR
 CELERYD_APP=$APP
-
