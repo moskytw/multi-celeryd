@@ -36,10 +36,10 @@ then
     . /etc/default/multi-celeryd
 fi
 
-test -x $DAEMON || exit 1
-test -d $CELERYD_CONFIGS_DIR || mkdir -p $CELERYD_CONFIGS_DIR
-test -d $CELERYD_PIDFILES_DIR || mkdir -p $CELERYD_PIDFILES_DIR
-test -d $CELERYD_LOGFILES_DIR || mkdir -p $CELERYD_LOGFILES_DIR
+test -x "$DAEMON" || exit 1
+test -d "$CELERYD_CONFIGS_DIR" || mkdir -p $CELERYD_CONFIGS_DIR
+test -d "$CELERYD_PIDFILES_DIR" || mkdir -p $CELERYD_PIDFILES_DIR
+test -d "$CELERYD_LOGFILES_DIR" || mkdir -p $CELERYD_LOGFILES_DIR
 
 chown $CELERYD_UID:$CELERYD_GID $CELERYD_PIDFILES_DIR
 chown $CELERYD_UID:$CELERYD_GID $CELERYD_LOGFILES_DIR
@@ -69,13 +69,13 @@ stop() {
 }
 
 status() {
-    status_of_proc -p $CELERYD_PIDFILE $DAEMON "$NAME '$CELERYD_APP' at '$CELERYD_WORKDIR'"
+    status_of_proc -p "$CELERYD_PIDFILE" "$DAEMON" "$NAME '$CELERYD_APP' at '$CELERYD_WORKDIR'"
 }
 
 multi() {
-    configs=`ls $CELERYD_CONFIGS_DIR`
+    configs="`ls $CELERYD_CONFIGS_DIR`"
 
-    if [ -z $configs ]
+    if [ -z "$configs" ]
     then
         echo "The configs dir '$CELERYD_CONFIGS_DIR' is empty.">&2
         echo "exit.">&2
@@ -94,12 +94,12 @@ multi() {
 
         . /$CELERYD_CONFIGS_DIR/$config
 
-        test -z $CELERYD_LOGLEVEL && CELERYD_LOGLEVEL='ERROR'
+        test -z "$CELERYD_LOGLEVEL" && CELERYD_LOGLEVEL='ERROR'
 
         if [ -n "$CELERYD_OWNER" ] && [ -n "$CELERYD_APP" ]
         then
-            test -z $CELERYD_PIDFILE && CELERYD_PIDFILE="$CELERYD_PIDFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.pid"
-            test -z $CELERYD_LOGFILE && CELERYD_LOGFILE="$CELERYD_LOGFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.log"
+            test -z "$CELERYD_PIDFILE" && CELERYD_PIDFILE="$CELERYD_PIDFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.pid"
+            test -z "$CELERYD_LOGFILE" && CELERYD_LOGFILE="$CELERYD_LOGFILES_DIR/celeryd-$CELERYD_OWNER-$CELERYD_APP.log"
         fi
 
         $1
