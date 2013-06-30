@@ -19,3 +19,7 @@ Then put the configs into `/etc/multi-celeryd` and run:
 
 It also supports `stop`, `restart`, `force-reload`, and `status`, but no
 `reload` for now, you can use `restart` instead of it.
+
+## Logs
+
+It puts the logs of the celeryd daemons at `/var/log/multi-celeryd`.
