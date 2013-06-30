@@ -140,7 +140,7 @@ case "$1" in
         multi status
         ;;
     *)
-        echo "Usage: $NAME {start|stop|restart|reload|force-reload|statu}" >&2
+        echo "Usage: $NAME {start|stop|restart|reload|force-reload|status}" >&2
         exit 1
         ;;
 esac
