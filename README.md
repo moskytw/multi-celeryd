@@ -1,6 +1,6 @@
 # Initialize Multiple Celeryd
 
-It is a LSB init script for [multiple celery](http://www.celeryproject.org/)
+It is a LSB init script for multiple [celery](http://www.celeryproject.org/)
 daemon.
 
 ## Installation
@@ -9,8 +9,9 @@ daemon.
 
 ## Usage
 
-You should write indepent config for each celery daemon. [Here](https://github.com/moskytw/init-multi-celeryd/blob/master/etc-multi-celeryd-config.tmpl) is a template of a
-config.
+You should write indepent config for each celery daemon.
+[Here](https://github.com/moskytw/init-multi-celeryd/blob/master/etc-multi-celeryd-config.tmpl)
+is a template of a config.
 
 Then put the configs into `/etc/multi-celeryd` and run:
 
