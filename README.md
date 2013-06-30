@@ -17,5 +17,5 @@ Then put the configs into `/etc/multi-celeryd` and run:
 
     sudo service multi-celeryd start
 
-It also supports `stop`, `restart`, `force-reload`, and status, but no
+It also supports `stop`, `restart`, `force-reload`, and `status`, but no
 `reload` for now, you can use `restart` instead of it.
