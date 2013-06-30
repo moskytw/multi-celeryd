@@ -1,7 +1,7 @@
 # Initialize Multiple Celeryd
 
 It is a LSB init script for multiple [celery](http://www.celeryproject.org/)
-daemon.
+daemons.
 
 ## Installation
 
